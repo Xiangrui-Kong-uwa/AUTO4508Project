@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="path_following" type="path_following.py" name="path_following" output="screen">
+    <param name="file_path" type="str" value="$(find path_following)/path_points.txt" />
+  </node>
+  <!-- <node pkg="record_display" type="record_display.py" name="record_display" output="screen"/>
+  <node pkg="remote_control" type="remote_control.py" name="remote_control" output="screen"/> -->
+</launch> 
