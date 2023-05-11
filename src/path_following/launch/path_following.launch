@@ -1,9 +1,9 @@
 <launch>
-	<node pkg = "rosaria" type = "RosAria" name = "RosAria">
-		<param name="port" value="/dev/ttyS1" type="string"/>
-	</node>
+  <node pkg = "rosaria" type = "RosAria" name = "RosAria">
+    <param name="port" value="/dev/ttyS1" type="string"/>
+  </node>
   <!-- depthai-ros for camera -->
-      <!-- <args for urdf/> -->
+  <!-- <args for urdf/> -->
   <arg name="camera_model"      default="OAK-D" /> <!-- 'zed' or 'zedm' -->
   <arg name="tf_prefix"         default="oak" />
   <arg name="mode"              default="depth" />
@@ -25,7 +25,6 @@
   <arg name="monoResolution"    default="720p" /> 
   <arg name="camera_param_uri"  default="package://depthai_examples/params/camera" />
 
-  
   <include file="$(find depthai_descriptions)/launch/urdf.launch">
       <arg name="base_frame"      value="$(arg  base_frame)"  />
       <arg name="parent_frame"    value="$(arg  parent_frame)"/>
