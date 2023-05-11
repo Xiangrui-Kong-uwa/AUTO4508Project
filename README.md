@@ -59,11 +59,11 @@ Source code, via email to lab demonstrator, clearly marking any imported code
 with referencing the source.    
 
 # Build and run
-'''
-$ git clone git@github.com:Xiangrui-Kong-uwa/AUTO4508Project.git
-$ cd AUTO4508Project
-$ source /opt/ros/noetic/setup.bash
-$ catkin_make -j2
-$ source devel/setup.bash
-$ roslaunch path_following path_following.launch
-'''
+```
+$ git clone git@github.com:Xiangrui-Kong-uwa/AUTO4508Project.git  
+$ cd AUTO4508Project  
+$ source /opt/ros/noetic/setup.bash  
+$ catkin_make -j2  
+$ source devel/setup.bash  
+$ roslaunch path_following path_following.launch  
+```
