@@ -1,35 +1,76 @@
 #!/usr/bin/env python3
-'''
-For safety reasons, implement a Bluetooth link between the robot’s on-board PC
-and a gamepad controller:
-a. Button ‘A’ enable automated mode.
-In automated mode, use the back pedals as a dead-man switch.
-If released, the robot has to stop.
-b. Button ‘B’ enable manual mode (disable automated mode).
-In manual mode, the steering controls can be used to manually drive the
-robot forward/backward and left/right.
-
-TODO: discuss with the team how to implement this node.
-'''
-import rospy
-from std_msgs.msg import String
+import rospy 
+from sensor_msgs.msg import Joy
+from geometry_msgs.msg import Twist, Vector3
 
 def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + ' I heard %s', data.data)
+	leftStick_right_and_left = data.axes[0] # Left stick - Right(-1) and Left(1)
+	leftStick_down_and_up = data.axes[1] # Left Stick - Down(-1) and Up(1)
+	# Values are from 0 - 1
+	# Want to ignore values between 0 - .15 because it makes respones very
+	# sensetive
 
-def node():
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
-    rospy.init_node('remote control', anonymous=True)
-    rospy.Subscriber('/some_status', String, callback)
-    pub = rospy.Publisher('chatter', String, queue_size=10)
-    pub.publish(rospy.loginfo(rospy.get_caller_id() + ' Start remote control'))
+	print('Joy Stick Output')
+	print (leftStick_right_and_left)
+	print(leftStick_down_and_up)
+	if (is_right(leftStick_right_and_left)):
+		pass
+	elif(is_left(leftStick_right_and_left)):
+		pass
+	elif(is_down(leftStick_down_and_up)):
+		pass
+	elif(is_up(leftStick_down_and_up)):
+		pass
 
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+
+
+	print('------')
+
+def is_down(value):
+	if value < -.2:
+		pub.publish(Twist(Vector3(-5,0,0),Vector3(0,0,0)))
+		return True
+	else:
+		pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,0)))
+		return False
+
+def is_right(value):
+	if value < -.2:
+		pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,-5)))
+		return True
+	else:
+		pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,0)))
+		return False
+
+def is_up(value):
+	if value > .2:
+		pub.publish(Twist(Vector3(5,0,0),Vector3(0,0,0)))
+		return True
+	else:
+		pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,0)))
+		return False
+
+
+def is_left(value):
+	if value > .2:
+		pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,5)))
+		return True
+	else:
+		pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,0)))
+		return False
+
+
+
+
+def Subscriber():
+    rospy.Subscriber('/joy', Joy, callback)
 
 if __name__ == '__main__':
-     node()
+    try:
+    	rospy.init_node('remote_control', anonymous=True)
+    	pub = rospy.Publisher('/RosAria/cmd_vel',Twist , queue_size=1)
+    	while not rospy.is_shutdown():
+    		Subscriber()
+    		rospy.spin()
+    except rospy.ROSInterruptException:
+    	pass
