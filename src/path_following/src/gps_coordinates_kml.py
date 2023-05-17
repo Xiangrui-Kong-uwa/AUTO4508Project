@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import xml.etree.ElementTree as ET
 
 def extract_coordinates_from_kml(kml_file):
