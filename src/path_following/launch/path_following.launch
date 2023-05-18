@@ -75,6 +75,10 @@
   <node pkg="path_following" type="path_following.py" name="path_following" output="screen">
     <param name="file_path" type="str" value="$(find path_following)/path_points.txt" />
   </node>
+  <!-- photo_taking node, save cone and objects  -->
+  <node pkg="photo_taking" type="photo_taking.py" name="photo_taking" output="screen">
+    <param name="file_path" type="str" value="$(find photo_taking)" />
+  </node>
   <node pkg="record_display" type="record_display.py" name="record_display" output="screen"/>
   <!-- TODO: add a back moving control -->
   <node pkg="remote_control" type="remote_control.py" name="remote_control" output="screen"/>

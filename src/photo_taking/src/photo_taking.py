@@ -6,25 +6,28 @@ If the robot is face to a way point marker, it will take a photo and save it to 
 After that, publish a msg to tell other node you finish the task. The robot will move to the next point.
 
 For the traffic sign, it will take a photo when the robot is close enough to the sign.
-
-TODO: discuss with the team how to implement this node.
 '''
 import rospy
+import cv2
 from std_msgs.msg import String
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 
-def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + ' I heard %s', data.data)
+def img_callback(img_msg):
+    '''
+    if cone detected, save image to a cone folder
+    
+    if traffic sign detected, save image to a traffic sign folder
+    '''
+    img_orig = CvBridge().imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
+    pass
+    #rospy.loginfo(rospy.get_caller_id() + ' I heard %s', data.data)
 
 def node():
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
     rospy.init_node('photo_taking', anonymous=True)
-    rospy.Subscriber('/some_status', String, callback)
+    rospy.Subscriber('/img', String, img_callback)
     pub = rospy.Publisher('chatter', String, queue_size=10)
-    pub.publish(rospy.loginfo(rospy.get_caller_id() + ' Start take photo'))
+    #pub.publish(rospy.loginfo(rospy.get_caller_id() + ' Start take photo'))
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
