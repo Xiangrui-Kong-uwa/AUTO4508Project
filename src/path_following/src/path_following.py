@@ -11,7 +11,8 @@ from std_msgs.msg import String
 from sensor_msgs.msg import NavSatFix
 
 def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + ' lat: %s, lon: %s', data.latitude, data.longitude)
+    pass 
+    #rospy.loginfo(rospy.get_caller_id() + ' lat: %s, lon: %s', data.latitude, data.longitude)
 
 def follower():
     # In ROS, nodes are uniquely named. If two nodes with the same
@@ -24,10 +25,8 @@ def follower():
 
     rate = rospy.Rate(1)
     while not rospy.is_shutdown():
-        hello_str = rospy.get_caller_id() + "publish /cml_vel %s" % rospy.get_time()
-        pub = rospy.Publisher('chatter', String, queue_size=10)
-        rospy.loginfo(hello_str)
-        pub.publish(hello_str)
+        #rospy.loginfo(hello_str)
+        #pub.publish(hello_str)
         rate.sleep()
 
     # spin() simply keeps python from exiting until this node is stopped

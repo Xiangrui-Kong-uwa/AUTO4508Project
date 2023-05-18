@@ -1,32 +1,53 @@
 #!/usr/bin/env python3
 '''
-This node records the robot's driving path and displays it graphically on the robot's display
-with all detected markers, objects and any obstacles.
-
-Implement a user interface with graphics and text on the robot's display that
-always displays the robot's internal state and its intended actions.
-
-TODO: discuss with the team how to implement this node.
+Use imu to plot path since the GPS is weak.
 '''
 import rospy
-from std_msgs.msg import String
+import math
+import matplotlib.pyplot as plt
+from sensor_msgs.msg import Imu, NavSatFix
+from tf.transformations import euler_from_quaternion
 
-def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + ' I heard %s', data.data)
+class recorderNode:
+    def __init__(self):
+        self.x = []
+        self.y = []
+        rospy.init_node('record_display', anonymous=True)
+        rospy.Subscriber('/imu/data', Imu, self.imu_callback)
+        rospy.Subscriber('/fix', NavSatFix, self.gps_callback)
+        #rate = rospy.Rate(10)  # Set the desired receiving rate to 10 Hz
 
-def recorder():
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
-    rospy.init_node('record_display', anonymous=True)
-    rospy.Subscriber('/some_status', String, callback)
-    pub = rospy.Publisher('chatter', String, queue_size=10)
-    pub.publish(rospy.loginfo(rospy.get_caller_id() + ' Start recording'))
 
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+    def imu_callback(self, msg):
+        orientation = msg.orientation
+        euler = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
+        heading = euler[2]  # Extracting the yaw angle from Euler angles
+
+        # Calculate the position using heading information and assume constant velocity
+        delta_x = 0.1 * math.cos(heading)  # Assuming a constant time interval of 0.1s
+        delta_y = 0.1 * math.sin(heading)  # Assuming a constant time interval of 0.1s
+
+        if len(self.x) == 0 and len(self.y) == 0:
+            self.x.append(0)
+            self.y.append(0)
+        else:
+            self.x.append(self.x[-1] + delta_x)
+            self.y.append(self.y[-1] + delta_y)
+
+    def gps_callback(self, msg):
+        pass
+
+    def plot_p  ath(self):
+        while not rospy.is_shutdown():
+            plt.plot(self.x, self.y, 'b-')
+            plt.xlabel('X')
+            plt.ylabel('Y')
+            plt.title('Path Plot')
+            plt.grid(True)
+            plt.pause(0.1)
+            rospy.spin()
+    
 
 if __name__ == '__main__':
-     recorder()
+     recorder = recorderNode()
+     recorder.plot_path()
