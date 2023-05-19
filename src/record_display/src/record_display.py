@@ -37,7 +37,7 @@ class recorderNode:
     def gps_callback(self, msg):
         pass
 
-    def plot_p  ath(self):
+    def plot_path(self):
         while not rospy.is_shutdown():
             plt.plot(self.x, self.y, 'b-')
             plt.xlabel('X')

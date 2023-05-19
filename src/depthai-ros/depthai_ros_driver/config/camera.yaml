@@ -30,7 +30,7 @@
   left_r_set_man_focus: false
   left_r_set_man_whitebalance: false
   left_r_whitebalance: 3300
-  nn_i_nn_config_path: depthai_ros_driver/mobilenet
+  nn_i_nn_config_path: depthai_ros_driver/yolo
   rgb_i_board_socket_id: 0
   rgb_i_calibration_file: ''
   rgb_i_enable_preview: false

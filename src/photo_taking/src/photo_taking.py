@@ -23,7 +23,7 @@ class imgNode():
         rospy.init_node('photo_taking', anonymous=True)
         rospy.Subscriber('/oak/rgb/image_raw', Image, self.rgb_callback)
         rospy.Subscriber('/oak/stereo/image_raw', Image, self.depth_callback)
-        pub = rospy.Publisher('chatter', String, queue_size=10)
+        self.pub = rospy.Publisher('/cone/captured', String, queue_size=10)
 
     def depth_callback(self, msg):
         img_depth = CvBridge().imgmsg_to_cv2(msg, desired_encoding='passthrough')
@@ -39,14 +39,13 @@ class imgNode():
         global i
         img_orig = CvBridge().imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
         retval, result = self.Cone_detection(img_orig)
-        print(retval)
         if(retval == True):
             x = int(result.centroid[0])
             y = int(result.centroid[1])
             item = self.dmap
             dist = item[x,y]
-            print(dist)
-            cv2.imwrite("/home/group6/img/"+str(i)+".png", img_orig)
+            #cv2.imwrite("/home/group6/img/"+str(i)+".png", img_orig)
+            self.pub.publish('Found cone')
             i+=1
 
     def Cone_detection(self,img):

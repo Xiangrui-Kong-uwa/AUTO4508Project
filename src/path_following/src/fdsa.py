@@ -3,7 +3,7 @@ import rospy
 from sensor_msgs.msg import Joy, LaserScan, NavSatFix
 from geometry_msgs.msg import Twist, Vector3
 from math import sin, cos, sqrt, atan2, radians, pi
-
+from std_msgs.msg import String
 # Here we will have the main control flow of the robot.
 # This node takes in all the appropriate sensor data and subscribes to the approptiate topics to make informed decisions
 # This node then publishes the cmd_vel topic to the robot to make it move.
@@ -14,7 +14,7 @@ kml_file_path = 'Pioneer-coordinates.kml'
 
 class WaypointNavigation:
     def __init__(self, waypoints):
-        rospy.init_node('waypoint_navigation')
+        
         self.waypoints = waypoints
         self.current_waypoint_index = 0
         self.currentState = 'Idle'
@@ -26,6 +26,7 @@ class WaypointNavigation:
         self.nav_fix_sub = rospy.Subscriber('/fix', NavSatFix, self.nav_fix_callback)
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.joy_callback)
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.state_pub = rospy.Publisher('/state', String)
         self.linear_velocity = 0.0
         self.angular_velocity = 0.0
     
@@ -147,13 +148,19 @@ class WaypointNavigation:
         self.cmd_vel_pub.publish(cmd_vel_msg)
 
     def main_loop(self):
+    
+    	state = String()
+    	
+    	state.data = self.currentState
+    	
+    	self.state_pub.publish(state)
 
         # Emergency STOP
         # If the deadmanswitch is not pressed, stop the robot
         # skips all other checks
         if self.stop:
-            self.linear_velocity == 0.0
-            self.angular_velocity == 0.0
+            self.linear_velocity = 0.0
+            self.angular_velocity = 0.0
             pub_msg = Twist()
             pub_msg.linear.x = self.linear_velocity
             pub_msg.angular.z = self.angular_velocity
@@ -164,8 +171,8 @@ class WaypointNavigation:
         self.currentState = self.nextState
 
         if self.currentState == 'Idle':
-            self.linear_velocity == 0.2
-            self.angular_velocity == 0.0
+            self.linear_velocity = 0.2
+            self.angular_velocity = 0.0
         elif self.currentState == 'ManualControl':
             pass
         elif self.currentState == 'WaypointFollowing':
@@ -205,6 +212,7 @@ class WaypointNavigation:
         self.cmd_vel_pub.publish(pub_msg)
 
     def run(self):
+    	rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.main_loop()
             rate.sleep()
@@ -238,8 +246,8 @@ def extract_coordinates_from_kml(kml_file):
 
 if __name__ == '__main__':
     waypoints = extract_coordinates_from_kml(kml_file_path) # Add your GPS waypoints here
+    rospy.init_node('waypoint_navigation')
     navigation = WaypointNavigation(waypoints)
-    rate = rospy.Rate(10)
     navigation.run()
 
 
