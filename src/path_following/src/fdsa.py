@@ -149,11 +149,11 @@ class WaypointNavigation:
 
     def main_loop(self):
     
-    	state = String()
-    	
-    	state.data = self.currentState
-    	
-    	self.state_pub.publish(state)
+        state = String()
+        
+        state.data = self.currentState
+        
+        self.state_pub.publish(state)
 
         # Emergency STOP
         # If the deadmanswitch is not pressed, stop the robot
@@ -212,7 +212,7 @@ class WaypointNavigation:
         self.cmd_vel_pub.publish(pub_msg)
 
     def run(self):
-    	rate = rospy.Rate(10)
+        rate = rospy.Rate(10)   
         while not rospy.is_shutdown():
             self.main_loop()
             rate.sleep()

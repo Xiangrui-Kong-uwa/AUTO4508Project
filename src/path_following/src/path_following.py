@@ -12,7 +12,9 @@ import os
 # This node takes in all the appropriate sensor data and subscribes to the approptiate topics to make informed decisions
 # This node then publishes the cmd_vel topic to the robot to make it move.
 
-kml_file_path = '../ws/src/path_following/src/Pioneer-coordinates.kml'
+#kml_file_path = '../ws/src/path_following/src/Pioneer-coordinates.kml'
+kml_file_path = os.path.dirname(os.path.abspath(__file__))+'/Pioneer-coordinates.kml'
+
 class WaypointNavigation:
     def __init__(self, waypoints):
 

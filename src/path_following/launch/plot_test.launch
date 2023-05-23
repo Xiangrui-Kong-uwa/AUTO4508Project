@@ -1,0 +1,15 @@
+<launch>
+  <!-- node for camera -->
+  <!-- depthai-ros for camera -->
+  <node pkg="photo_taker" type="photo_taker.py" name="photo_taker" output="screen">
+    <param name="file_path" type="str" value="$(find photo_taker)" />
+  </node>
+
+  <node pkg="path_following" type="path_following.py" name="path_following" output="screen"/>
+
+  <node pkg="record_display" type="record_display.py" name="record_display" output="screen">
+      <param name="waypoints_file" type="str" value="$(find path_following)/src/Pioneer-coordinates.kml"/>
+      <param name="map_file" type="str" value="$(find record_display)/map.png"/>
+  </node>
+
+</launch> 
