@@ -6,17 +6,17 @@ If the robot is face to a way point marker, it will take a photo and save it to 
 After that, publish a msg to tell other node you finish the task. The robot will move to the next point.
 
 For the traffic sign, it will take a photo when the robot is close enough to the sign.
+
 '''
 import rospy
 import cv2
 import numpy as np
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from skimage import measure
 t_min = 0
 i = 0
-
 class imgNode():
     def __init__(self):
         self.dmap = []

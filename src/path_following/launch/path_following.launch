@@ -20,11 +20,37 @@
   <node pkg = "rosaria" type = "RosAria" name = "RosAria">
     <param name="port" value="/dev/ttyS1" type="string"/>
   </node>
-  
-  <node pkg="photo_taker" type="photo_taker.py" name="photo_taker" output="screen">
-    <param name="file_path" type="str" value="$(find photo_taker)" />
+
+  <node pkg="path_display" type="path_display.py" name="path_display">
+  </node>
+
+  <arg name="launch_prefix" default=""/>
+  <arg name="image" default="/oak/rgb/image_raw" />
+
+  <!-- Config and weights folder. -->
+  <!-- <arg name="yolo_weights_path"          default="$(find darknet_ros)/yolo_network_config/weights"/>
+  <arg name="yolo_config_path"           default="$(find darknet_ros)/yolo_network_config/cfg"/> -->
+
+  <!-- ROS and network parameter files -->
+  <!-- <arg name="ros_param_file"             default="$(find darknet_ros)/config/ros.yaml"/>
+  <arg name="network_param_file"         default="$(find darknet_ros)/config/yolov4-tiny.yaml"/> -->
+
+  <!-- Load parameters -->
+  <!-- <rosparam command="load" ns="darknet_ros" file="$(arg ros_param_file)"/>
+  <rosparam command="load" ns="darknet_ros" file="$(arg network_param_file)"/> -->
+
+  <!-- Start darknet and ros wrapper -->
+  <!-- <node pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+    <param name="weights_path"          value="$(arg yolo_weights_path)" />
+    <param name="config_path"           value="$(arg yolo_config_path)" />
+    <remap from="camera/rgb/image_raw"  to="$(arg image)" />
+  </node> -->
+
+  <node pkg="photo_taking" type="photo_taking.py" name="photo_taking" output="screen">
+    <param name="file_path" type="str" value="$(find photo_taking)" />
   </node>
   
+ 
   <!-- node for lidar -->
   <include file="$(find sick_scan)/launch/sick_tim_7xx.launch"></include>
 
@@ -34,11 +60,8 @@
   <node name="lidar_detect" pkg="lidar_detect" type="lidar_detect.py" output="screen" />
   <node pkg="path_following" type="path_following.py" name="path_following" output="screen">
   </node>
-  
-  <node pkg="record_display" type="record_display.py" name="record_display" output="screen">
-      <param name="waypoints_file" type="str" value="$(find path_following)/src/Pioneer-coordinates.kml"/>
-      <param name="map_file" type="str" value="$(find record_display)/map.png"/>
-  </node>
+  <node pkg="record_display" type="record_display.py" name="record_display" output="screen"/>
+  <node pkg="heading" type="heading.py" name="heading"/>
   
   <include file="$(find depthai_examples)/launch/rgbd_pcl.launch"></include>  
   <!-- node for transformation -->
