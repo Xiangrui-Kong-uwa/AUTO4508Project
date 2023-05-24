@@ -5,7 +5,7 @@ import rospy
 from sensor_msgs.msg import Joy, LaserScan, NavSatFix
 from geometry_msgs.msg import Twist, Vector3
 from math import sin, cos, sqrt, atan2, radians, pi, isnan
-from std_msgs.msg import String, Float64
+from std_msgs.msg import String, Float64, Bool
 import math
 import os
 # Here we will have the main control flow of the robot.
@@ -29,6 +29,7 @@ class WaypointNavigation:
         self.lid_msg = LaserScan()
         self.collide_detect = True
         self.goal_bearing = 0.0
+        self.object_avoid_front = rospy.Subscriber('/avoid_object/front', Bool,self.object_avoid_front_callback)
         self.heading_sub = rospy.Subscriber('/compass/heading', Float64, self.heading_callback)
         self.nav_fix_sub = rospy.Subscriber('/fix', NavSatFix, self.nav_fix_callback)
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.joy_callback)
@@ -36,7 +37,11 @@ class WaypointNavigation:
         self.state_pub = rospy.Publisher('/state', String, queue_size=10)
         self.linear_velocity = 0.0
         self.angular_velocity = 0.0
-    
+
+    def object_avoid_front_callback(self,object_avoid):
+        self.collide_detect = object_avoid.data
+        #print(self.collide_detect)
+
     def heading_callback(self,heading_msg):
         self.currentHeading = heading_msg.data
 
@@ -138,16 +143,13 @@ class WaypointNavigation:
         # Compute the angular velocity proportional to the heading error
         #print(desired_heading)
         #print(current_heading)
-        print(heading_error)
+        #print(heading_error)
         return max_angular_velocity * heading_error
     
 
     def main_loop(self):
 
-        state = String()
-        state.data = self.currentState
 
-        self.state_pub.publish(state)
         # Emergency STOP
         # If the deadmanswitch is not pressed, stop the robot
         # skips all other checks
@@ -169,9 +171,18 @@ class WaypointNavigation:
             self.linear_velocity = 0.0
             self.angular_velocity = 0.0
             self.nextState = 'WaypointFollowing'
-        elif self.currentState == 'WaypointFollowing':
-            self.linear_velocity = 0.7
-            self.angular_velocity = self.calculate_angular_velocity(self.goal_bearing)
+        elif self.currentState == "WaypointFollowing":
+            #print(self.collide_detect)
+            if self.collide_detect:
+                #print('avoiding_object')
+                self.linear_velocity = 0.0
+                self.angular_velocity = 0.5
+                self.currentState = 'AvoidiingObject'
+                self.nextState = "WaypointFollowing"
+            else:
+                #print('waypoint_following')
+                self.linear_velocity = 0.7
+                self.angular_velocity = self.calculate_angular_velocity(self.goal_bearing)
         elif self.currentState == 'AtWaypoint':
             print('waypoint')
             # TODO: implement this state
@@ -201,6 +212,11 @@ class WaypointNavigation:
         # publishes the drive command
         # THIS SHOULD BE THE ONLY THING THAT PUBLISHES TO THE CMD_VEL TOPIC
         # exception is the emergency stop
+
+        state = String()
+        state.data = self.currentState
+
+        self.state_pub.publish(state)
 
         pub_msg = Twist()
         pub_msg.linear.x = self.linear_velocity
@@ -240,12 +256,12 @@ def extract_coordinates_from_kml(kml_file):
 
 
 if __name__ == '__main__':
-    print("Start")
+    #print("Start")
     waypoints = extract_coordinates_from_kml(
         kml_file_path)  # Add your GPS waypoints here
 
-    #waypoints = [[-31.9801990,115.8179322],[-31.9802811,115.8180582]]
+    waypoints = [[-31.9801990,115.8179322],[-31.9802811,115.8180582], [-31.9803828,115.8174952]]
     rospy.init_node('waypoint_navigation')
-    print("Test")
+    #print("Test")
     navigation = WaypointNavigation(waypoints)
     navigation.run()
