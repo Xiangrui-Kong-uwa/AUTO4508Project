@@ -34,8 +34,11 @@
   <node name="lidar_detect" pkg="lidar_detect" type="lidar_detect.py" output="screen" />
   <node pkg="path_following" type="path_following.py" name="path_following" output="screen">
   </node>
-  <node pkg="record_display" type="record_display.py" name="record_display" output="screen"/>
-   <node pkg="heading" type="heading.py" name="heading"/>
+  
+  <node pkg="record_display" type="record_display.py" name="record_display" output="screen">
+      <param name="waypoints_file" type="str" value="$(find path_following)/src/Pioneer-coordinates.kml"/>
+      <param name="map_file" type="str" value="$(find record_display)/map.png"/>
+  </node>
   
   <include file="$(find depthai_examples)/launch/rgbd_pcl.launch"></include>  
   <!-- node for transformation -->
