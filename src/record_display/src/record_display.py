@@ -4,8 +4,7 @@ Use imu to plot path since the GPS is weak.
 '''
 import rospy
 import math
-import folium
-import webbrowser
+import csv
 import matplotlib
 matplotlib.use('Agg') 
 import numpy as np
@@ -13,14 +12,13 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Imu, NavSatFix
+from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import String, Float64
-from tf.transformations import euler_from_quaternion
 
 class recorderNode:
     def __init__(self, waypoints_file, map_path):
         self.lat, self.lon, self.heading = [], [], 0 # heading radians [-pi,pi]
-        self.waypoints = self.extract_coordinates_from_kml(waypoints_file)
+        self.waypoints = self.read_gps_positions(waypoints_file)
         self.map_path = map_path
         self.cone_flg, self.marker_flg, self.cone_dis, self.marker_dis = False, 0, False, 0
     
@@ -31,6 +29,20 @@ class recorderNode:
         #self.rate = rospy.Rate(1)  # Set the desired receiving rate to 1 Hz
 
         self.image_publisher = rospy.Publisher('map_image', Image, queue_size=10) # publish map as image shown in rviz
+
+    def read_gps_positions(self, file_path):
+        positions = []
+        with open(file_path, 'r') as csv_file:
+            reader = csv.reader(csv_file)
+            for row in reader:
+                if len(row) >= 2:
+                    try:
+                        latitude = float(row[0])
+                        longitude = float(row[1])
+                        positions.append([latitude, longitude])
+                    except ValueError:
+                        print("Invalid GPS position:", row)
+        return positions
 
     def extract_coordinates_from_kml(self, waypoints_file):
         with open(waypoints_file):

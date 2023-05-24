@@ -8,12 +8,14 @@ from math import sin, cos, sqrt, atan2, radians, pi, isnan
 from std_msgs.msg import String, Float64, Bool
 import math
 import os
+import csv
 # Here we will have the main control flow of the robot.
 # This node takes in all the appropriate sensor data and subscribes to the approptiate topics to make informed decisions
 # This node then publishes the cmd_vel topic to the robot to make it move.
 
 #kml_file_path = '../ws/src/path_following/src/Pioneer-coordinates.kml'
 kml_file_path = os.path.dirname(os.path.abspath(__file__))+'/Pioneer-coordinates.kml'
+wp_file_path = os.path.dirname(os.path.abspath(__file__))+'/waypoints.csv'
 
 class WaypointNavigation:
     def __init__(self, waypoints):
@@ -232,35 +234,45 @@ class WaypointNavigation:
 
 def extract_coordinates_from_kml(kml_file):
     with open(kml_file):
-      tree = ET.parse(kml_file)
+        tree = ET.parse(kml_file)
     root = tree.getroot()
-
     coordinates = []
-
     # Find all <coordinates> elements
     for element in root.iter('{http://www.opengis.net/kml/2.2}coordinates'):
         # Extract and split the coordinate values
         coords = element.text.strip().split()
-
         # Process each coordinate value
         for coord in coords:
             # Split the coordinate string into latitude, longitude, and optional altitude
             parts = coord.split(',')
-
             # Append the latitude and longitude to the coordinates array
             latitude = float(parts[1])
             longitude = float(parts[0])
             coordinates.append((latitude, longitude))
-
     return coordinates
+
+def read_gps_positions(file_path):
+    positions = []
+    with open(file_path, 'r') as csv_file:
+        reader = csv.reader(csv_file)
+        for row in reader:
+            if len(row) >= 2:
+                try:
+                    latitude = float(row[0])
+                    longitude = float(row[1])
+                    positions.append([latitude, longitude])
+                except ValueError:
+                    print("Invalid GPS position:", row)
+    return positions
 
 
 if __name__ == '__main__':
-    #print("Start")
-    waypoints = extract_coordinates_from_kml(
-        kml_file_path)  # Add your GPS waypoints here
-
-    waypoints = [[-31.9801990,115.8179322],[-31.9802811,115.8180582], [-31.9803828,115.8174952]]
+    # waypoints = extract_coordinates_from_kml(
+    #     kml_file_path)  # Add your GPS waypoints here
+    waypoints = read_gps_positions(
+        wp_file_path)  # Add your GPS waypoints here
+    waypoints.append(waypoints[0]) # Add the first waypoint to the end of the list
+    #waypoints = [[-31.9801990,115.8179322],[-31.9802811,115.8180582], [-31.9803828,115.8174952]]
     rospy.init_node('waypoint_navigation')
     #print("Test")
     navigation = WaypointNavigation(waypoints)
