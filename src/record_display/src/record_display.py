@@ -90,15 +90,15 @@ class recorderNode:
         #plt.ylim(min(wp_latitudes) - 0.001, max(wp_latitudes) + 0.001) 
 
         if self.marker_flg and len(self.lat) > 0:
-            marker_lat = self.lat[-1] + self.marker_dis * math.cos(self.heading)*1e-5
-            marker_lon = self.lon[-1] + self.marker_dis * math.sin(self.heading)*1e-5
+            marker_lat = self.lat[-1] + self.marker_dis * math.sin(self.heading)*1e-5
+            marker_lon = self.lon[-1] + self.marker_dis * math.cos(self.heading)*1e-5
             self.marker_flg = False
             self.plt.plot(marker_lon, marker_lat, 'r+')
             
         # TODO: change the calculations of heading based on its definition
         if self.cone_flg and len(self.lat) > 0:
-            cone_lat = self.lat[-1] + self.cone_dis * math.cos(self.heading)*1e-5
-            cone_lon = self.lon[-1] + self.cone_dis * math.sin(self.heading)*1e-5
+            cone_lat = self.lat[-1] + self.cone_dis * math.sin(self.heading)*1e-5
+            cone_lon = self.lon[-1] + self.cone_dis * math.cos(self.heading)*1e-5
             self.cone_flg = False
             self.plt.plot(cone_lon, cone_lat, 'r^')
         # Draw lines between each pair of points
