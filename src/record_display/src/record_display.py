@@ -78,13 +78,13 @@ class recorderNode:
 
         # TODO: change the calculations of heading based on its definition
         if self.cone_flg and len(self.lat) > 0:
-            cone_lat = self.lat[-1] + self.cone_dis * math.cos(self.heading)*1e-5
-            cone_lon = self.lon[-1] + self.cone_dis * math.sin(self.heading)*1e-5
+            cone_lat = self.lat[-1] + self.cone_dis * math.cos(self.heading)*1e-8
+            cone_lon = self.lon[-1] + self.cone_dis * math.sin(self.heading)*1e-8
             self.cone_flg = False
             hd_cone = plt.plot(cone_lon, cone_lat, 'r+')
         if self.marker_flg and len(self.lat) > 0:
-            marker_lat = self.lat[-1] + self.marker_dis * math.cos(self.heading)*1e-5
-            marker_lon = self.lon[-1] + self.marker_dis * math.sin(self.heading)*1e-5
+            marker_lat = self.lat[-1] + self.marker_dis * math.cos(self.heading)*1e-8
+            marker_lon = self.lon[-1] + self.marker_dis * math.sin(self.heading)*1e-8
             self.marker_flg = False
             hd_marker = plt.plot(marker_lon, marker_lat, 'g+')
 
