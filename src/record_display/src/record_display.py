@@ -105,12 +105,9 @@ class recorderNode:
         fig = self.plt.gcf()
         fig.canvas.draw()
         image_np = np.array(fig.canvas.renderer.buffer_rgba())
-
         bridge = CvBridge()
         ros_image = bridge.cv2_to_imgmsg(image_np, "rgba8")
         self.image_publisher.publish(ros_image)
-
-
         #self.plt.legend(framealpha=1, frameon=True)
         plt.pause(1)
         self.plt.savefig(self.map_path)
@@ -134,13 +131,13 @@ class recorderNode:
 
     def detection_callback(self, msg):
         cone_flg, cone_dis, marker_flg, marker_dis = msg.data.split(',')
-        print(msg.data)
+        #print(msg.data)
         self.cone_flg = True if cone_flg == '1' else False
         self.marker_flg = True if marker_flg == '1' else False
         self.cone_dis = float(cone_dis)*1e-2
         self.marker_dis = float(marker_dis)*1e-2
         #if self.cone_flg and self.marker_flg:
-        rospy.loginfo("cone_flg: %s, marker_flg: %s, cone_dis: %f, marker_dis: %f", self.cone_flg, self.marker_flg, self.cone_dis, self.marker_dis)
+        #rospy.loginfo("cone_flg: %s, marker_flg: %s, cone_dis: %f, marker_dis: %f", self.cone_flg, self.marker_flg, self.cone_dis, self.marker_dis)
 
         self.plot_path()
 
