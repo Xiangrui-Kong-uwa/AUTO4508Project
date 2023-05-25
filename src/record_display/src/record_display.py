@@ -19,6 +19,21 @@ class recorderNode:
     def __init__(self, waypoints_file, map_path):
         self.lat, self.lon, self.heading = [], [], 0 # heading radians [-pi,pi]
         self.waypoints = self.read_gps_positions(waypoints_file)
+        wp_latitudes = [coord[0] for coord in self.waypoints]
+        wp_longitudes = [coord[1] for coord in self.waypoints]
+        # Plot the way points and path coordinates
+        self.plt = plt
+        self.plt.plot(wp_longitudes, wp_latitudes, 'ro')
+        self.plt.xlabel('Longitude')
+        self.plt.ylabel('Latitude')
+        self.plt.title('Map')
+        self.plt.grid(False)
+        print(wp_latitudes, wp_longitudes)
+        for i in range(len(self.waypoints) - 1):
+            self.plt.plot([self.waypoints[i][1], self.waypoints[i+1][1]],
+                    [self.waypoints[i][0], self.waypoints[i+1][0]],
+                    'r--')
+
         self.map_path = map_path
         self.cone_flg, self.marker_flg, self.cone_dis, self.marker_dis = False, 0, False, 0
     
@@ -68,37 +83,26 @@ class recorderNode:
         return coordinates
 
     def plot_path(self, state='run'):
-        wp_latitudes = [coord[0] for coord in self.waypoints]
-        wp_longitudes = [coord[1] for coord in self.waypoints]
-        # Plot the way points and path coordinates
-        plt.plot(wp_longitudes, wp_latitudes, 'ro')
-        plt.plot(self.lon, self.lat, 'bo')
-        plt.xlim(min(wp_longitudes) - 0.001, max(wp_longitudes) + 0.001) # 0.001 is the offset
-        plt.ylim(min(wp_latitudes) - 0.001, max(wp_latitudes) + 0.001) 
+        
+        if len(self.lat) > 0:
+            self.plt.plot(self.lon[-1], self.lat[-1], 'bo')
+        #plt.xlim(min(wp_longitudes) - 0.001, max(wp_longitudes) + 0.001) # 0.001 is the offset
+        #plt.ylim(min(wp_latitudes) - 0.001, max(wp_latitudes) + 0.001) 
 
+        if self.marker_flg and len(self.lat) > 0:
+            marker_lat = self.lat[-1] + self.marker_dis * math.cos(self.heading)*1e-5
+            marker_lon = self.lon[-1] + self.marker_dis * math.sin(self.heading)*1e-5
+            self.marker_flg = False
+            self.plt.plot(marker_lon, marker_lat, 'r+')
+            
         # TODO: change the calculations of heading based on its definition
         if self.cone_flg and len(self.lat) > 0:
-            cone_lat = self.lat[-1] + self.cone_dis * math.cos(self.heading)*1e-8
-            cone_lon = self.lon[-1] + self.cone_dis * math.sin(self.heading)*1e-8
+            cone_lat = self.lat[-1] + self.cone_dis * math.cos(self.heading)*1e-5
+            cone_lon = self.lon[-1] + self.cone_dis * math.sin(self.heading)*1e-5
             self.cone_flg = False
-            hd_cone = plt.plot(cone_lon, cone_lat, 'r+')
-        if self.marker_flg and len(self.lat) > 0:
-            marker_lat = self.lat[-1] + self.marker_dis * math.cos(self.heading)*1e-8
-            marker_lon = self.lon[-1] + self.marker_dis * math.sin(self.heading)*1e-8
-            self.marker_flg = False
-            hd_marker = plt.plot(marker_lon, marker_lat, 'g+')
-
+            self.plt.plot(cone_lon, cone_lat, 'r^')
         # Draw lines between each pair of points
-        for i in range(len(self.waypoints) - 1):
-            plt.plot([self.waypoints[i][1], self.waypoints[i+1][1]],
-                    [self.waypoints[i][0], self.waypoints[i+1][0]],
-                    'r--')
-
-        plt.xlabel('Longitude')
-        plt.ylabel('Latitude')
-        plt.title('Coordinate Plot with Lines')
-        plt.grid(True)
-        fig = plt.gcf()
+        fig = self.plt.gcf()
         fig.canvas.draw()
         image_np = np.array(fig.canvas.renderer.buffer_rgba())
 
@@ -106,16 +110,12 @@ class recorderNode:
         ros_image = bridge.cv2_to_imgmsg(image_np, "rgba8")
         self.image_publisher.publish(ros_image)
 
-        if state == 'stop': # TODO: modify the name of state
-            plt.scatter([], [], c='r', marker='+', label='cone')
-            plt.scatter([], [], c='g', marker='+', label='marker')
-            plt.scatter([], [], c='b', marker='o', label='path')
-            plt.scatter([], [], c='r', marker='o', label='waypoints')
 
-            plt.legend(framealpha=1, frameon=True)
-            plt.savefig(self.map_path)
-            rospy.loginfo('Map saved! Go ' + self.map_path)
-            plt.close()
+        #self.plt.legend(framealpha=1, frameon=True)
+        plt.pause(1)
+        self.plt.savefig(self.map_path)
+        #rospy.loginfo('Map saved! Go ' + self.map_path)
+        #self.plt.close()
 
     def imu_callback(self, msg):
         self.heading = math.radians(msg.data)
@@ -133,13 +133,14 @@ class recorderNode:
         self.plot_path()
 
     def detection_callback(self, msg):
-        cone_flg, marker_flg, cone_dis, marker_dis = msg.data.split(',')
-        self.cone_flg = 'True' if cone_flg == '1' else 'False'
-        self.marker_flg = 'True' if marker_flg == '1' else 'False'
-        self.cone_dis = float(cone_dis)
-        self.marker_dis = float(marker_dis)
-        if self.cone_flg or self.marker_flg:
-            rospy.loginfo("cone_flg: %s, marker_flg: %s, cone_dis: %f, marker_dis: %f", self.cone_flg, self.marker_flg, self.cone_dis, self.marker_dis)
+        cone_flg, cone_dis, marker_flg, marker_dis = msg.data.split(',')
+        print(msg.data)
+        self.cone_flg = True if cone_flg == '1' else False
+        self.marker_flg = True if marker_flg == '1' else False
+        self.cone_dis = float(cone_dis)*1e-2
+        self.marker_dis = float(marker_dis)*1e-2
+        #if self.cone_flg and self.marker_flg:
+        rospy.loginfo("cone_flg: %s, marker_flg: %s, cone_dis: %f, marker_dis: %f", self.cone_flg, self.marker_flg, self.cone_dis, self.marker_dis)
 
         self.plot_path()
 
